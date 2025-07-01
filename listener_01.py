@@ -1,30 +1,35 @@
+from telethon.sync import TelegramClient, events
 from env_vars import *
-import os
-from telethon import TelegramClient, events
-from dotenv import load_dotenv
+import asyncio
 
-load_dotenv()
-
-api_id = int(os.getenv("API_ID"))
-api_hash = os.getenv("API_HASH")
-phone = os.getenv("PHONE_NUMBER")
-target_group = int(os.getenv("TARGET_GROUP_ID"))
-source_chats = os.getenv("SOURCE_CHAT_IDS").split(",")
-keywords = [kw.strip().lower() for kw in os.getenv("KEYWORDS").split(",")]
-
-client = TelegramClient("session_listener_01", api_id, api_hash)
-
-@client.on(events.NewMessage(chats=source_chats))
-async def handler(event):
-    msg = event.message.message.lower()
-    if any(keyword in msg for keyword in keywords):
-        await client.send_message(target_group, event.message)
+client = TelegramClient(PHONE_NUMBER, API_ID, API_HASH)
 
 async def main():
-    await client.start(phone=phone)
-    print("Listener started.")
-    await client.run_until_disconnected()
+    async with client:
+        @client.on(events.NewMessage(chats=SOURCE_CHAT_IDS))
+        async def handler(event):
+            text = event.message.message.lower()
+            if any(keyword in text for keyword in KEYWORDS):
+                chat = await event.get_chat()
+                sender = await event.get_sender()
 
-if __name__ == "__main__":
-    import asyncio
-    asyncio.run(main())
+                chat_name = getattr(chat, 'title', 'Unknown Chat')
+                chat_username = getattr(chat, 'username', None)
+                sender_username = getattr(sender, 'username', None)
+                message_id = event.message.id
+
+                link = f"https://t.me/{chat_username}/{message_id}" if chat_username else "Ссылка недоступна"
+
+                response = f"📌 *Найдено сообщение:*
+"
+                response += f"👥 Чат: {chat_name}\n"
+                response += f"🙋‍♂️ Пользователь: @{sender_username if sender_username else 'Неизвестен'}\n"
+                response += f"🔗 Ссылка: {link}\n"
+                response += f"💬 Текст: {event.message.message}"
+
+                await client.send_message(int(TARGET_GROUP_ID), response)
+
+        print("Слушаю чаты...")
+        await client.run_until_disconnected()
+
+asyncio.run(main())
