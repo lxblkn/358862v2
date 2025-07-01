@@ -20,7 +20,7 @@ async def main():
 
                 link = f"https://t.me/{chat_username}/{message_id}" if chat_username else "Ссылка недоступна"
 
-                response = f"📌 *Найдено сообщение:*
+                response = f"📌 *Найдено сообщение:*\n"
 "
                 response += f"👥 Чат: {chat_name}\n"
                 response += f"🙋‍♂️ Пользователь: @{sender_username if sender_username else 'Неизвестен'}\n"
