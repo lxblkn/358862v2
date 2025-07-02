@@ -1,35 +1,45 @@
-from telethon.sync import TelegramClient, events
-from env_vars import *
 import asyncio
+from telethon import TelegramClient, events
+from env_vars import API_ID, API_HASH, PHONE_NUMBER, SOURCE_CHAT_IDS, TARGET_GROUP_ID, KEYWORDS
+from datetime import datetime
+import pytz
 
+# Устанавливаем часовой пояс на Москву
+moscow = pytz.timezone("Europe/Moscow")
 client = TelegramClient(PHONE_NUMBER, API_ID, API_HASH)
 
+def message_contains_keywords(message_text):
+    lower_text = message_text.lower()
+    return any(keyword.lower() in lower_text for keyword in KEYWORDS)
+
+@client.on(events.NewMessage(chats=SOURCE_CHAT_IDS))
+async def handler(event):
+    now = datetime.now(moscow)
+    if now.hour < 11 or now.hour >= 1:
+        return  # вне времени работы
+
+    if event.message.text and message_contains_keywords(event.message.text):
+        sender = await event.get_sender()
+        chat = await event.get_chat()
+        message_link = None
+
+        if hasattr(event.message, 'id') and hasattr(chat, 'username') and chat.username:
+            message_link = f"https://t.me/{chat.username}/{event.message.id}"
+
+        # Формируем сообщение
+        result = f"📢 **Сообщение из чата:** {getattr(chat, 'title', 'Без названия')}\n"
+        if sender.username:
+            result += f"👤 @{sender.username}\n"
+        if message_link:
+            result += f"🔗 [Открыть сообщение]({message_link})\n"
+        result += f"\n📝 {event.message.text}"
+
+        await client.send_message(TARGET_GROUP_ID, result, link_preview=False)
+
 async def main():
-    async with client:
-        @client.on(events.NewMessage(chats=SOURCE_CHAT_IDS))
-        async def handler(event):
-            text = event.message.message.lower()
-                print(f"Пришло сообщение: {text}")
-                if any(keyword in text for keyword in KEYWORDS):
-                chat = await event.get_chat()
-                sender = await event.get_sender()
+    await client.start()
+    print("✅ Парсер запущен. Слушаю чаты...")
+    await client.run_until_disconnected()
 
-                chat_name = getattr(chat, 'title', 'Unknown Chat')
-                chat_username = getattr(chat, 'username', None)
-                sender_username = getattr(sender, 'username', None)
-                message_id = event.message.id
-
-                link = f"https://t.me/{chat_username}/{message_id}" if chat_username else "Ссылка недоступна"
-
-                response = f"📌 *Найдено сообщение:*\n"
-                response += f"👥 Чат: {chat_name}\n"
-                response += f"🙋‍♂️ Пользователь: @{sender_username if sender_username else 'Неизвестен'}\n"
-                response += f"🔗 Ссылка: {link}\n"
-                response += f"💬 Текст: {event.message.message}"
-
-                await client.send_message(int(TARGET_GROUP_ID), response)
-
-        print("Слушаю чаты...")
-        await client.run_until_disconnected()
-
-asyncio.run(main())
+if __name__ == "__main__":
+    asyncio.run(main())
