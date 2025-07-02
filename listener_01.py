@@ -9,7 +9,8 @@ async def main():
         @client.on(events.NewMessage(chats=SOURCE_CHAT_IDS))
         async def handler(event):
             text = event.message.message.lower()
-            if any(keyword in text for keyword in KEYWORDS):
+                print(f"Пришло сообщение: {text}")
+                if any(keyword in text for keyword in KEYWORDS):
                 chat = await event.get_chat()
                 sender = await event.get_sender()
 
