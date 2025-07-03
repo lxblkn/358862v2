@@ -4,6 +4,8 @@ from env_vars import API_ID, API_HASH, PHONE_NUMBER, SOURCE_CHAT_IDS, TARGET_GRO
 from datetime import datetime
 import pytz
 
+SOURCE_CHAT_IDS = [-1234567890, -100987654321]
+
 # Устанавливаем часовой пояс на Москву
 moscow = pytz.timezone("Europe/Moscow")
 client = TelegramClient(PHONE_NUMBER, API_ID, API_HASH)
