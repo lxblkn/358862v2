@@ -14,7 +14,8 @@ def message_contains_keywords(message_text):
 
 @client.on(events.NewMessage(chats=SOURCE_CHAT_IDS))
 async def handler(event):
-    now = datetime.now(moscow)
+print(f"[DEBUG] Получено сообщение: {event.message.text}")
+  now = datetime.now(moscow)
     if now.hour < 11 or now.hour >= 1:
         return  # вне времени работы
 
