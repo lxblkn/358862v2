@@ -4,22 +4,23 @@ from env_vars import API_ID, API_HASH, PHONE_NUMBER, SOURCE_CHAT_IDS, TARGET_GRO
 from datetime import datetime
 import pytz
 
-SOURCE_CHAT_IDS = [-1001628476182, -1001673077839, -1001526157104, -1001687239850, -1001863472286]
-
 # Устанавливаем часовой пояс на Москву
 moscow = pytz.timezone("Europe/Moscow")
 client = TelegramClient(PHONE_NUMBER, API_ID, API_HASH)
+
 
 def message_contains_keywords(message_text):
     lower_text = message_text.lower()
     return any(keyword.lower() in lower_text for keyword in KEYWORDS)
 
+
 @client.on(events.NewMessage(chats=SOURCE_CHAT_IDS))
 async def handler(event):
-print(f"[DEBUG] Получено сообщение: {event.message.text}")
-  now = datetime.now(moscow)
-    if now.hour < 11 or now.hour >= 1:
-        return  # вне времени работы
+    print(f"[DEBUG] Получено сообщение: {event.message.text}")  # Отладка
+
+    now = datetime.now(moscow)
+    if not (11 <= now.hour or now.hour == 0):  # Рабочее время: 11:00–01:00
+        return
 
     if event.message.text and message_contains_keywords(event.message.text):
         sender = await event.get_sender()
@@ -39,10 +40,12 @@ print(f"[DEBUG] Получено сообщение: {event.message.text}")
 
         await client.send_message(TARGET_GROUP_ID, result, link_preview=False)
 
+
 async def main():
     await client.start()
     print("✅ Парсер запущен. Слушаю чаты...")
     await client.run_until_disconnected()
+
 
 if __name__ == "__main__":
     asyncio.run(main())
