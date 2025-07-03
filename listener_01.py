@@ -4,7 +4,7 @@ from env_vars import API_ID, API_HASH, PHONE_NUMBER, SOURCE_CHAT_IDS, TARGET_GRO
 from datetime import datetime
 import pytz
 
-SOURCE_CHAT_IDS = [-1234567890, -100987654321]
+SOURCE_CHAT_IDS = [-1001628476182, -1001673077839, -1001526157104, -1001687239850, -1001863472286]
 
 # Устанавливаем часовой пояс на Москву
 moscow = pytz.timezone("Europe/Moscow")
