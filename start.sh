@@ -2,7 +2,7 @@
 
 while true; do
   hour=$(TZ="Europe/Moscow" date +%H)
-  if [ "$hour" -ge 11 ] || [ "$hour" -lt 1 ]; then
+  if [ "$hour" -ge 11 ] || [ "$hour" -eq 0 ]; then
     echo "🟢 Starting parser..."
     python3 listener_01.py
   else
