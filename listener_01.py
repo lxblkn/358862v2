@@ -18,7 +18,7 @@ async def handler(event):
     now = datetime.now(moscow)
     print(f"[{now.strftime('%H:%M:%S')}] Получено сообщение: {event.message.text}")  # DEBUG print
 
-    if now.hour < 11 or now.hour >= 1:
+    if now.hour < 11 and now.hour >= 1:
         print("⏰ Вне рабочего времени, сообщение проигнорировано")
         return
 
